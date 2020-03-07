@@ -1,0 +1,28 @@
+[package]
+name = "posterust"
+version = "0.0.1"
+authors = ["Collyn O'Kane <47607823+okaneco@users.noreply.github.com>"]
+edition = "2018"
+exclude = ["test", "gfx"]
+description = "Command-line utility to make value-limited, posterized images from existing pictures. Based on a brightness scale with values from 0 to 10, users can specify which values to display. Developed as a tool to help with value studies for painting and explore tonal shapes."
+homepage = "https://github.com/okaneco/posterust"
+repository = "https://github.com/okaneco/posterust"
+readme = "README.md"
+
+keywords = ["value", "scale", "levels", "posterization", "art"]
+categories = ["graphics", "multimedia::images"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+structopt = { version = "0.3", default-features = false }
+
+[dependencies.image]
+version = "0.23"
+default-features = false
+features = ["jpeg", "png"]
+
+[dependencies.palette]
+version = "0.5"
+git = "https://github.com/Ogeon/palette/"
+default-features = false
+features = ["std"]
