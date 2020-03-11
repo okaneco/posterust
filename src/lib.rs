@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use palette::luma::Luma;
-use palette::{encoding, Srgb};
+use palette::{encoding, Pixel, Srgb};
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -129,12 +129,11 @@ pub fn run(opt: Opt) -> Result<(), Box<dyn Error>> {
 
         for (x, y, out_pixel) in imgbuf.enumerate_pixels_mut() {
             let in_pixel = img.get_pixel(x, y);
-            let luma = (Luma::<encoding::Srgb>::from(
-                Srgb::from_components((in_pixel[0], in_pixel[1], in_pixel[2])).into_format::<f32>(),
-            )
-            .luma
-                * 255.0)
-                .round() as u8;
+            let luma =
+                (Luma::<encoding::Srgb>::from(Srgb::from_raw(&in_pixel.0).into_format::<f32>())
+                    .luma
+                    * 255.0)
+                    .round() as u8;
             let color_key = get_threshold_key(luma, &luma_vec);
             let out_rgb = generated_colors.get(&color_key).unwrap();
             *out_pixel = image::Rgb([out_rgb.red, out_rgb.green, out_rgb.blue]);
