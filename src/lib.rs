@@ -99,7 +99,7 @@ pub fn run(opt: Opt) -> Result<(), Box<dyn Error>> {
                 generated_colors = get_custom_greyscale_hashmap(&luma_vec);
             } else {
                 if values_len != colors_len {
-                    println!("Error: Number of values and colors do not match.");
+                    eprintln!("Error: Number of values and colors do not match.");
                     return Ok(());
                 }
                 if !opt.keep {
@@ -122,21 +122,16 @@ pub fn run(opt: Opt) -> Result<(), Box<dyn Error>> {
     }
 
     for file in files {
-        let img = image::open(&file)?.to_rgb();
-        let imgx = img.dimensions().0;
-        let imgy = img.dimensions().1;
-        let mut imgbuf: image::RgbImage = image::ImageBuffer::new(imgx, imgy);
+        let mut imgbuf: image::RgbImage = image::open(&file)?.to_rgb();
 
-        for (x, y, out_pixel) in imgbuf.enumerate_pixels_mut() {
-            let in_pixel = img.get_pixel(x, y);
-            let luma =
-                (Luma::<encoding::Srgb>::from(Srgb::from_raw(&in_pixel.0).into_format::<f32>())
-                    .luma
-                    * 255.0)
-                    .round() as u8;
+        for pixel in imgbuf.pixels_mut() {
+            let luma = (Luma::<encoding::Srgb>::from(Srgb::from_raw(&pixel.0).into_format::<f32>())
+                .luma
+                * 255.0)
+                .round() as u8;
             let color_key = get_threshold_key(luma, &luma_vec);
             let out_rgb = generated_colors.get(&color_key).unwrap();
-            *out_pixel = image::Rgb([out_rgb.red, out_rgb.green, out_rgb.blue]);
+            *pixel = image::Rgb([out_rgb.red, out_rgb.green, out_rgb.blue]);
         }
 
         // If single file, use output provided or generate filename.
@@ -197,7 +192,7 @@ pub fn run(opt: Opt) -> Result<(), Box<dyn Error>> {
         match imgbuf.save(&title) {
             Ok(_) => {}
             Err(err) => {
-                println!("Error: {}.", err);
+                eprintln!("Error: {}.", err);
                 fs::remove_file(&title)?;
             }
         }
@@ -210,9 +205,7 @@ pub fn run(opt: Opt) -> Result<(), Box<dyn Error>> {
 fn luma_threshold(num: u8) -> Vec<u8> {
     let step = 255 / num;
     let mut v = Vec::with_capacity(usize::from(num));
-    for i in 0..num {
-        v.push(i * step);
-    }
+    (0..num).for_each(|i| v.push(i * step));
     v
 }
 
@@ -354,7 +347,7 @@ fn parse_color(c: &str) -> Result<Srgb<u8>, CliError> {
         match &c.get(0..2) {
             Some(x) => x,
             None => {
-                println!("Invalid color: {}", c);
+                eprintln!("Invalid color: {}", c);
                 return Err(CliError::InvalidHex);
             }
         },
@@ -364,7 +357,7 @@ fn parse_color(c: &str) -> Result<Srgb<u8>, CliError> {
         match &c.get(2..4) {
             Some(x) => x,
             None => {
-                println!("Invalid color: {}", c);
+                eprintln!("Invalid color: {}", c);
                 return Err(CliError::InvalidHex);
             }
         },
@@ -374,7 +367,7 @@ fn parse_color(c: &str) -> Result<Srgb<u8>, CliError> {
         match &c.get(4..6) {
             Some(x) => x,
             None => {
-                println!("Invalid color: {}", c);
+                eprintln!("Invalid color: {}", c);
                 return Err(CliError::InvalidHex);
             }
         },
